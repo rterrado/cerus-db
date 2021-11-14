@@ -20,7 +20,7 @@ class InstanceController {
         ]));
 
         # Creates client namespace
-        mkdir('./../.sto/clt');
+        mkdir('./../.sto/clt',0777);
     }
 
     public static function get(
@@ -48,5 +48,6 @@ class InstanceController {
     {
         return "{$_SERVER["DOCUMENT_ROOT"]}/.sto/{$instanceName}.json";
     }
+    
 
 }

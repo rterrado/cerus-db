@@ -28,6 +28,13 @@ class Factory
         return $this->payload;
     }
 
+    public function setPayload(
+        object $payload
+        )
+    {
+        $this->payload = $payload;
+    }
+
     public function files()
     {
         return $this->files;

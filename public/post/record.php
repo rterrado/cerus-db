@@ -18,15 +18,18 @@ use \cerus\Controllers\ClientController;
 $request = new Request;
 $response = new Response;
 
+# Requires instance name
 if (!isset($request->query()->instance)) {
     $response->abort(CerusExceptions::REQUIRES_INSTANCE_NAME);
     exit();
 }
 
+# Instantiates
 $instance = new CerusInstanceModel(
     $request->query()->instance
 );
 
+# Abort if
 if (!$instance->doExist()) {
     $response->abort(CerusExceptions::INSTANCE_NOT_EXISTING);
     exit();
@@ -42,15 +45,6 @@ if (!isset($request->payload()->secretkey)) {
     exit();
 }
 
-if(!Checkpoint::isAuth(
-    $instance,
-    $request->payload()->appkey,
-    $request->payload()->secretkey
-)){
-    $response->unauthorized('401:Unauthorized');
-    exit();
-}
-
 if (!isset($request->payload()->clientname)) {
     $response->abort('Exception::Requires client name');
     exit();
@@ -60,19 +54,24 @@ $client = new ClientModel(
     $request->payload()->clientname
 );
 
-if ($client->doExist()) {
-    $response->abort('Exception::Client namespace is existing');
+if (!$client->doExist()) {
+    $response->abort('Exception::Client do not exist');
     exit();
 }
 
-ClientController::create($client);
+if(!Checkpoint::isAuth(
+    $instance,
+    $request->payload()->appkey,
+    $request->payload()->secretkey
+)){
+    $response->unauthorized('401:Unauthorized');
+    exit();
+}
 
-$response->code(200)
-         ->json([
-             '@namespace' => $client->getNamespace(),
-             '@publicKey' => $client->getPublicKey(),
-             '@privateKey' => $client->getPrivateKey(),
-             '@createdAt' => $client->getCreatedAt(),
-             '@status' => $client->getStatus()
-         ])
-         ->send();
+$record = new RecordModel(
+    $request->query()->id??null
+);
+
+
+
+//echo json_encode($request->payload()->data->public);

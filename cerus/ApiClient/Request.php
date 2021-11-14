@@ -13,6 +13,7 @@ class Request extends Parser
 
     public function __construct()
     {
+
         $this->factory = new Factory;
         $this->bootQuery();
         $this->bootPayload();

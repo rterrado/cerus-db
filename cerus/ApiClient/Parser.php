@@ -24,8 +24,11 @@ class Parser {
         string $payload
         )
     {
-        $data = json_decode(urldecode($payload), true);
+        $data = json_decode(urldecode($payload));
 
+        $factory->setPayload($data);
+
+        /*
         # Uses parse_str for url-encoded form data
         if (!is_array($data)) parse_str($payload, $data);
 
@@ -33,6 +36,7 @@ class Parser {
             data: $data,
             object: $factory->payload()
         );
+        */
         return;
     }
 
