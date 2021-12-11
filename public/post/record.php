@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-ini_set('error_reporting','E_ALL');
-ini_set( 'display_errors','1');
+// ini_set('error_reporting','E_ALL');
+// ini_set( 'display_errors','1');
 
 require '../../autoloader.php';
 
@@ -14,6 +14,9 @@ use \cerus\Auth\Checkpoint;
 use \cerus\Models\CerusInstanceModel;
 use \cerus\Models\ClientModel;
 use \cerus\Controllers\ClientController;
+use \cerus\Models\RecordModel;
+use \cerus\Utility;
+use \cerus\Executables\PostNewRecord;
 
 $request = new Request;
 $response = new Response;
@@ -68,9 +71,54 @@ if(!Checkpoint::isAuth(
     exit();
 }
 
-$record = new RecordModel(
-    $request->query()->id??null
-);
+// $record = new RecordModel([]);
+// $record->public(json_decode(json_encode($request->payload()->public),TRUE));
+// $record->private(json_decode(json_encode($request->payload()->private),TRUE));
+
+
+$queueId = Utility::create32bitKey();
+$recordId = Utility::create32bitKey();
+$recordPublicId = Utility::create32bitKey();
+$recordPrivateId = Utility::create64bitKey();
+
+$phpUnit = PostNewRecord::create([
+    'root' => $_SERVER['DOCUMENT_ROOT'],
+    'id' => $recordId,
+    'namespace' => $client->getNamespace(),
+    'createdAt' => time(),
+    'updatedAt' => time(),
+    'clientPublicKey' => $client->getPublicKey(),
+    'clientPrivateKey' => $client->getPrivateKey(),
+    'public' => json_encode($request->payload()->public),
+    'recordPublicId'=>$recordPublicId,
+    'recordPrivateId'=>$recordPrivateId,
+    'private' => json_encode($request->payload()->private),
+    'meta' => json_encode($request->payload()->meta),
+    'index' => json_encode($request->payload()->index)
+]);
+
+file_put_contents($_SERVER['DOCUMENT_ROOT'].'/.que/'.$queueId.'.php',$phpUnit);
+shell_exec("/dev/null 2>/dev/null & php ".$_SERVER['DOCUMENT_ROOT']."/.que/".$queueId.".php");
+//echo "/dev/null 2>/dev/null & php ".$_SERVER['DOCUMENT_ROOT']."/.que/".$queueId.".php";
+
+
+$response->code(200)
+         ->json([
+             'message'=>'Record created',
+             'recordId' => $recordId,
+             'namespace' => $client->getNamespace(),
+             'recordPublicId' => $recordPublicId,
+             'recordPrivateId' => $recordPrivateId,
+             'createdAt' => time(),
+             'status' => 'active'
+         ])
+         ->send();
+
+
+
+//shell_exec("php ".$_SERVER['DOCUMENT_ROOT']."/.que/delayer.php"."> /dev/null 2>/dev/null &");
+
+
 
 
 

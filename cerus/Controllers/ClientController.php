@@ -59,7 +59,7 @@ class ClientController {
         string $namespace
         )
     {
-        return "{$_SERVER["DOCUMENT_ROOT"]}/.sto/{$namespace}";
+        return "{$_SERVER["DOCUMENT_ROOT"]}/.sto/{$namespace}/client.json";
     }
 
 
