@@ -26,7 +26,7 @@ class Parser {
     {
         $data = json_decode(urldecode($payload));
 
-        $factory->setPayload($data);
+        $factory->setPayload($data ?? new Class{});
 
         /*
         # Uses parse_str for url-encoded form data
